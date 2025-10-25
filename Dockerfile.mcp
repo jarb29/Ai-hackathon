@@ -1,0 +1,47 @@
+# Multi-stage build for Chrome MCP Service
+FROM node:20-slim as production
+
+# Install Chrome and system dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    curl \
+    chromium \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libxss1 \
+    libnss3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Create MCP service wrapper files
+COPY docker/mcp-service.js .
+COPY docker/package.json .
+
+# Install service dependencies
+RUN npm install
+
+# Install MCP Chrome DevTools server globally for npx access
+RUN npm install -g chrome-devtools-mcp
+
+# Set Chrome binary path
+ENV CHROME_BIN=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=45s --timeout=15s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Start MCP service
+CMD ["node", "mcp-service.js"]

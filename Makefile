@@ -67,3 +67,30 @@ test:
 		echo "No tests directory found"; \
 	fi
 
+# Docker commands
+docker-build:
+	@echo "Building Docker images..."
+	docker-compose -f docker-compose.dev.yml build
+	@echo "✓ Docker images built"
+
+docker-up:
+	@echo "Starting Docker containers..."
+	docker-compose -f docker-compose.dev.yml up -d
+	@echo "✓ Containers started"
+	@echo "API: http://localhost:9000"
+	@echo "MCP: http://localhost:3001"
+
+docker-down:
+	@echo "Stopping Docker containers..."
+	docker-compose -f docker-compose.dev.yml down
+	@echo "✓ Containers stopped"
+
+docker-clean:
+	@echo "Cleaning Docker containers and images..."
+	docker-compose -f docker-compose.dev.yml down
+	docker rmi aihackanton-web-audit-api aihackanton-chrome-mcp 2>/dev/null || true
+	@echo "✓ Cleaned"
+
+docker-logs:
+	@echo "Showing container logs..."
+	docker-compose -f docker-compose.dev.yml logs -f
