@@ -16,9 +16,9 @@ from app.routes import health, audit
 from frontend.routes import web
 from config.config import settings
 from middleware.logging_middleware import LoggingMiddleware
-from utils.logger import get_logger
+from utils.logger import setup_logger
 
-logger = get_logger(__name__)
+logger = setup_logger(__name__)
 
 app = FastAPI(
     title="Enterprise Web Audit Platform",
@@ -104,10 +104,10 @@ app.include_router(audit.router, tags=["audit"])
 if __name__ == "__main__":
     import uvicorn
     logger.info("✓ Web Audit Agent starting up")
-    logger.info("✓ Server configuration: %s:%d", settings.api_host, settings.api_port)
+    logger.info("✓ Server configuration: %s:%d", settings.app_host, settings.app_port)
     uvicorn.run(
         "main:app",
-        host=settings.api_host,
-        port=settings.api_port,
+        host=settings.app_host,
+        port=settings.app_port,
         reload=True
     )
