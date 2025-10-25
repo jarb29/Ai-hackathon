@@ -1,143 +1,85 @@
-from datetime import datetime
-from typing import Dict, Any
-from src.clients.mcp_tool_client import MCPToolClient
-from src.clients.llm_client import LLMClient
-from src.schemas.responses import AuditResponse, PerformanceMetrics, SecurityAssessment, ExecutiveSummary
-from src.config.config import settings
-from src.utils.logger import setup_logger
+"""Business logic for web audit operations.
 
-logger = setup_logger(__name__)
+This module contains the core AuditService class that orchestrates the complete
+web audit pipeline by coordinating between the LLM client and MCP tool client
+to perform comprehensive performance and security analysis.
+"""
+
+from clients.mcp_tool_client import MCPToolClient
+from clients.llm_client import LLMClient
+from schemas.responses import AuditResponse
+from utils.logger import get_logger
+from utils.log_context import log_context
+
+logger = get_logger(__name__)
 
 
 class AuditService:
-    def __init__(self):
-        self.mcp_client = MCPToolClient(settings.mcp_server_path, settings.mcp_server_args)
-        self.llm_client = LLMClient()
-
+    """Core business service for orchestrating web audits.
+    
+    This service acts as the main coordinator between the OpenAI LLM client
+    and Chrome DevTools MCP client to perform comprehensive web audits.
+    It handles the complete audit pipeline from URL input to structured response.
+    """
+    
+    def __init__(self, mcp_client: MCPToolClient, llm_client: LLMClient):
+        """Initialize the audit service with required clients.
+        
+        Args:
+            mcp_client: Chrome DevTools MCP client for browser automation
+            llm_client: OpenAI client for AI-powered analysis
+        """
+        self.mcp_client = mcp_client
+        self.llm_client = llm_client
+    
     async def perform_audit(self, url: str) -> AuditResponse:
-        """Orchestrate the complete three-phase audit process"""
-        logger.info(f"Starting audit for {url}")
+        """Perform comprehensive web audit on the given URL.
         
-        try:
-            # Start MCP server
-            await self.mcp_client.start_server()
-            
-            # Phase 1: AI-driven tool selection and execution
-            tool_results = await self._execute_browser_tools(url)
-            
-            # Phase 2: Technical analysis
-            technical_report = await self.llm_client.create_technical_report(url, tool_results)
-            
-            # Phase 3: Executive summary
-            executive_data = await self.llm_client.create_executive_summary(technical_report)
-            
-            # Build response
-            response = self._build_audit_response(url, technical_report, executive_data, tool_results)
-            
-            logger.info(f"Audit completed for {url}")
-            return response
-            
-        except Exception as e:
-            logger.error(f"Audit failed for {url}: {e}")
-            raise
-        finally:
-            await self.mcp_client.stop_server()
-
-    async def _execute_browser_tools(self, url: str) -> Dict[str, Any]:
-        """Execute browser automation tools to gather data"""
-        results = {}
+        Orchestrates the complete audit pipeline:
+        1. Delegates to LLM client for AI-powered analysis
+        2. LLM client uses MCP tools for browser automation
+        3. Collects performance metrics (Core Web Vitals, Lighthouse)
+        4. Performs security assessment (HTTPS, headers, vulnerabilities)
+        5. Returns structured audit response with recommendations
         
-        try:
-            # Navigate to page
-            results["navigation"] = await self.mcp_client.navigate_page(url)
+        Args:
+            url: Target website URL to audit
             
-            # Start performance tracing
-            await self.mcp_client.performance_start_trace()
+        Returns:
+            AuditResponse: Structured audit results with performance,
+                         security metrics, and recommendations
+                         
+        Raises:
+            Exception: If audit pipeline fails at any stage
+        """
+        with log_context.timer("Complete Audit Pipeline"):
+            logger.info("✓ Pipeline started")
+            logger.info("[audit_url=%s] Starting comprehensive web audit", url)
             
-            # Security checks via JavaScript
-            security_script = """
-            ({
-                https: location.protocol === 'https:',
-                headers: {
-                    csp: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
-                    xframe: true // Would need server response headers
-                },
-                certificates: location.protocol === 'https:'
-            })
-            """
-            results["security"] = await self.mcp_client.evaluate_script(security_script)
-            
-            # Performance metrics
-            perf_script = """
-            ({
-                timing: performance.timing,
-                navigation: performance.navigation,
-                entries: performance.getEntriesByType('navigation')[0] || {},
-                vitals: {
-                    fcp: performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
-                    lcp: performance.getEntriesByType('largest-contentful-paint')[0]?.startTime
-                }
-            })
-            """
-            results["performance"] = await self.mcp_client.evaluate_script(perf_script)
-            
-            # Stop performance tracing
-            results["trace"] = await self.mcp_client.performance_stop_trace()
-            
-            # Network analysis
-            results["network"] = await self.mcp_client.list_network_requests()
-            
-            # Console messages
-            results["console"] = await self.mcp_client.list_console_messages()
-            
-            # Screenshot
-            results["screenshot"] = await self.mcp_client.take_screenshot()
-            
-        except Exception as e:
-            logger.error(f"Browser tool execution failed: {e}")
-            results["error"] = str(e)
-        
-        return results
-
-    def _build_audit_response(self, url: str, technical_report: Dict, executive_data: Dict, tool_results: Dict) -> AuditResponse:
-        """Build the final audit response"""
-        
-        # Extract performance data
-        perf_data = technical_report.get("performance", {})
-        performance = PerformanceMetrics(
-            lighthouse_score=perf_data.get("lighthouse_score"),
-            core_web_vitals=perf_data.get("core_web_vitals", {}),
-            ttfb=perf_data.get("ttfb"),
-            fcp=perf_data.get("fcp"),
-            lcp=perf_data.get("lcp"),
-            cls=perf_data.get("cls")
-        )
-        
-        # Extract security data
-        sec_data = technical_report.get("security", {})
-        security = SecurityAssessment(
-            risk_level=sec_data.get("risk_level", "unknown"),
-            https_enabled=sec_data.get("https_enabled", False),
-            security_headers=sec_data.get("security_headers", {}),
-            vulnerabilities=sec_data.get("vulnerabilities", [])
-        )
-        
-        # Extract executive summary
-        exec_data = executive_data.get("executive_summary", {})
-        executive_summary = ExecutiveSummary(
-            business_impact=exec_data.get("business_impact", ""),
-            investment_priority=exec_data.get("investment_priority", "medium"),
-            roi_estimate=exec_data.get("roi_estimate", ""),
-            timeline=exec_data.get("timeline", ""),
-            key_recommendations=exec_data.get("key_recommendations", [])
-        )
-        
-        return AuditResponse(
-            url=url,
-            status="completed",
-            performance=performance,
-            security=security,
-            executive_summary=executive_summary,
-            technical_details=tool_results,
-            timestamp=datetime.now().isoformat()
-        )
+            try:
+                # Delegate to LLM client which coordinates MCP tool usage
+                audit_result = await self.llm_client.analyze_with_mcp_tools(
+                    url=url,
+                    mcp_client=self.mcp_client
+                )
+                
+                # Log business metrics
+                logger.metric("[audit_completed] url=%s overall_score=%d grade=%s", 
+                             url, audit_result.overall_score, audit_result.grade)
+                
+                logger.metric("[core_web_vitals] url=%s LCP=%.2fs FID=%.0fms CLS=%.3f", 
+                             url, audit_result.performance.core_web_vitals.lcp,
+                             audit_result.performance.core_web_vitals.fid,
+                             audit_result.performance.core_web_vitals.cls)
+                
+                logger.metric("[security_assessment] url=%s https_enabled=%s risk_level=%s vulnerabilities=%d", 
+                             url, audit_result.security.https_enabled,
+                             audit_result.security.risk_level,
+                             len(audit_result.security.vulnerabilities))
+                
+                logger.info("✓ Audit completed successfully")
+                return audit_result
+                
+            except Exception as e:
+                logger.error("[audit_logic] Audit failed for URL %s: %s", url, str(e), exc_info=True)
+                raise

@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from schemas.requests import AuditRequest
 from schemas.responses import AuditResponse
 from business.audit_logic import AuditService
-from helpers.validators import is_valid_url
+from helpers.validators import validate_url
 from clients.service_factory import get_audit_service
-from utils.logger import setup_logger
+from utils.logger import get_logger
 
-logger = setup_logger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -64,8 +64,7 @@ async def perform_audit(
         logger.info("[audit_request] Starting audit for URL: %s", request.url)
         
         # Validate URL format and accessibility
-        if not is_valid_url(str(request.url)):
-            raise HTTPException(status_code=400, detail="Invalid URL format")
+        validate_url(str(request.url))
         logger.info("✓ URL validation passed")
         
         # Delegate to business service for complete audit pipeline
