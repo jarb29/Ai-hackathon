@@ -51,7 +51,12 @@ class MCPServiceManager extends EventEmitter {
             '--headless=true',
             '--isolated=true'
         ], {
-            stdio: ['pipe', 'pipe', 'pipe']
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: {
+                ...process.env,
+                CHROME_BIN: '/usr/bin/chromium',
+                PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium'
+            }
         });
         
         this._setupProcessHandlers();

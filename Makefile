@@ -1,6 +1,6 @@
 # Web Audit Agent - Development Makefile
 
-.PHONY: help venv install run stop clean test docker-build docker-up docker-down docker-clean docker-logs
+.PHONY: help venv install run stop clean test docker-build docker-up docker-down docker-clean docker-logs docker-fix
 
 # Default target
 help:
@@ -16,6 +16,7 @@ help:
 	@echo "  make docker-down  - Stop Docker containers"
 	@echo "  make docker-clean - Remove containers and images"
 	@echo "  make docker-logs  - Show container logs"
+	@echo "  make docker-fix   - Fix Docker build issues"
 
 # Create virtual environment
 venv:
@@ -69,9 +70,9 @@ test:
 
 # Docker commands
 docker-build:
-	@echo "Building Docker images..."
+	@echo "Building Docker images with Alpine Linux (faster & reliable)..."
 	docker-compose -f docker-compose.dev.yml build
-	@echo "✓ Docker images built"
+	@echo "✓ Docker images built successfully"
 
 docker-up:
 	@echo "Starting Docker containers..."
@@ -87,10 +88,20 @@ docker-down:
 
 docker-clean:
 	@echo "Cleaning Docker containers and images..."
-	docker-compose -f docker-compose.dev.yml down
-	docker rmi aihackanton-web-audit-api aihackanton-chrome-mcp 2>/dev/null || true
+	docker-compose -f docker-compose.dev.yml down --volumes --remove-orphans 2>/dev/null || true
+	docker rmi ai-hackathon-web-audit-api ai-hackathon-chrome-mcp 2>/dev/null || true
+	docker system prune -f --volumes 2>/dev/null || true
 	@echo "✓ Cleaned"
 
 docker-logs:
 	@echo "Showing container logs..."
 	docker-compose -f docker-compose.dev.yml logs -f
+
+# Fix Docker build issues
+docker-fix:
+	@echo "Fixing Docker build issues..."
+	@docker-compose -f docker-compose.dev.yml down --volumes --remove-orphans 2>/dev/null || true
+	@docker system prune -af --volumes 2>/dev/null || true
+	@echo "Rebuilding with Alpine Linux (no Debian repo issues)..."
+	@make docker-build
+	@echo "✓ Docker issues fixed with Alpine Linux"

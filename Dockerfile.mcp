@@ -1,23 +1,16 @@
-# Multi-stage build for Chrome MCP Service
-FROM node:20-slim as production
+# Fast Alpine-based build for Chrome MCP Service
+FROM node:20-alpine as production
 
-# Install Chrome and system dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    curl \
-    chromium \
-    fonts-liberation \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libxss1 \
-    libnss3 \
-    && rm -rf /var/lib/apt/lists/*
+# Update package index and install Chromium with retry logic
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache \
+            chromium \
+            curl \
+            font-noto-emoji \
+            ttf-freefont && \
+        rm -rf /var/cache/apk/* && break || sleep 5; \
+    done
 
 # Set working directory
 WORKDIR /app
@@ -27,14 +20,15 @@ COPY docker/mcp-service.js .
 COPY docker/package.json .
 
 # Install service dependencies
-RUN npm install
+RUN npm install --production
 
-# Install MCP Chrome DevTools server globally for npx access
+# Install MCP Chrome DevTools server globally
 RUN npm install -g chrome-devtools-mcp
 
-# Set Chrome binary path
-ENV CHROME_BIN=/usr/bin/chromium
+# Set Chromium binary path for Alpine
+ENV CHROME_BIN=/usr/bin/chromium-browser
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Expose port
 EXPOSE 3001

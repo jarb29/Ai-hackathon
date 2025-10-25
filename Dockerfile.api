@@ -1,11 +1,15 @@
-# Multi-stage build for Web Audit API
-FROM python:3.9-slim as builder
+# Fast Alpine-based build for Web Audit API
+FROM python:3.9-alpine as builder
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Update package index and install build dependencies with retry
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache \
+            gcc \
+            musl-dev \
+            linux-headers \
+            curl && break || sleep 5; \
+    done
 
 # Set working directory
 WORKDIR /app
@@ -15,12 +19,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Production stage
-FROM python:3.9-slim as production
+FROM python:3.9-alpine as production
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Update package index and install runtime dependencies with retry
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache curl && break || sleep 5; \
+    done
 
 # Set working directory
 WORKDIR /app
