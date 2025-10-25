@@ -1,6 +1,6 @@
 # Web Audit Agent - Development Makefile
 
-.PHONY: help venv install run clean test docker-build docker-up docker-down docker-clean docker-logs
+.PHONY: help venv install run stop clean test docker-build docker-up docker-down docker-clean docker-logs
 
 # Default target
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  make venv         - Create virtual environment"
 	@echo "  make install      - Install dependencies"
 	@echo "  make run          - Start the application"
+	@echo "  make stop         - Kill processes on port 9000"
 	@echo "  make clean        - Clean build artifacts"
 	@echo "  make test         - Run tests (if available)"
 	@echo "  make docker-build - Build Docker images"
@@ -50,6 +51,12 @@ clean:
 	find . -name "*.pyc" -delete
 	find . -name "__pycache__" -delete
 	@echo "✓ Cleaned"
+
+# Stop application (kill processes on port 9000)
+stop:
+	@echo "Stopping Web Audit Agent..."
+	@lsof -ti:9000 | xargs kill -9 2>/dev/null || echo "No processes found on port 9000"
+	@echo "✓ Stopped"
 
 # Run tests
 test:
