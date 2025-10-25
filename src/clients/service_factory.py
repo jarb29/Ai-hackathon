@@ -6,21 +6,21 @@ and ensures consistent configuration across the application.
 """
 
 from config.config import settings
-from clients.http_mcp_client import HTTPMCPClient
+from clients.mcp_tool_client import MCPToolClient
 from clients.llm_client import LLMClient
 from business.audit_logic import AuditService
 
 
-def get_mcp_client() -> HTTPMCPClient:
-    """Create HTTP-based MCP client for multi-container setup.
+def get_mcp_client() -> MCPToolClient:
+    """Create MCP client for local development.
     
-    Factory function for creating MCP client that communicates with the
-    Chrome MCP service via HTTP REST API in a multi-container environment.
+    Factory function for creating MCP client that communicates with
+    Chrome DevTools via subprocess for local development.
     
     Returns:
-        HTTPMCPClient: Configured HTTP MCP client for browser automation
+        MCPToolClient: Configured MCP client for browser automation
     """
-    return HTTPMCPClient(settings.mcp_service_url)
+    return MCPToolClient(settings.mcp_server_path, settings.mcp_server_args)
 
 
 def get_llm_client() -> LLMClient:
@@ -49,6 +49,4 @@ def get_audit_service() -> AuditService:
         AuditService: Fully configured audit service with all dependencies
     """
     # Create and inject dependencies for complete audit pipeline
-    mcp_client = get_mcp_client()  # Chrome DevTools browser automation
-    llm_client = get_llm_client()  # OpenAI AI-powered analysis
-    return AuditService(mcp_client, llm_client)
+    return AuditService()
