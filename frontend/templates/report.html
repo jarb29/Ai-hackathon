@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Report - {{ audit.url }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Audit Report</h2>
+                <p class="text-muted mb-0">{{ audit.url }}</p>
+            </div>
+            <div class="text-end">
+                <div class="badge bg-{% if audit.grade == 'A' %}success{% elif audit.grade == 'B' %}warning{% else %}danger{% endif %} fs-6 px-3 py-2">
+                    Grade {{ audit.grade }}
+                </div>
+                <div class="text-muted small mt-1">{{ audit.timestamp }}</div>
+            </div>
+        </div>
+
+        <!-- Overall Score -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <div class="display-4 fw-bold text-primary">{{ audit.overall_score }}</div>
+                        <div class="text-muted">Overall Score</div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-{% if audit.overall_score >= 80 %}success{% elif audit.overall_score >= 60 %}warning{% else %}danger{% endif %}" 
+                                 style="width: {{ audit.overall_score }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance & Security Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="fw-bold">{{ audit.performance.core_web_vitals.lcp }}s</div>
+                                <small class="text-muted">LCP</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold">{{ audit.performance.core_web_vitals.fid }}ms</div>
+                                <small class="text-muted">FID</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold">{{ audit.performance.core_web_vitals.cls }}</div>
+                                <small class="text-muted">CLS</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <div class="h4 text-success">{{ audit.performance.lighthouse_score }}/100</div>
+                            <small class="text-muted">Lighthouse Score</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>HTTPS Enabled</span>
+                                <span class="badge bg-{% if audit.security.https_enabled %}success{% else %}danger{% endif %}">
+                                    {% if audit.security.https_enabled %}Yes{% else %}No{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Risk Level</span>
+                                <span class="badge bg-{% if audit.security.risk_level == 'low' %}success{% elif audit.security.risk_level == 'medium' %}warning{% else %}danger{% endif %}">
+                                    {{ audit.security.risk_level|title }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h4 text-warning">{{ audit.security.vulnerabilities|length }}</div>
+                            <small class="text-muted">Vulnerabilities Found</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Executive Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Business Impact</h6>
+                        <p class="mb-3">{{ audit.executive_summary.business_impact }}</p>
+                        
+                        <h6 class="text-primary">Investment Priority</h6>
+                        <span class="badge bg-{% if audit.executive_summary.investment_priority == 'High' %}danger{% elif audit.executive_summary.investment_priority == 'Medium' %}warning{% else %}success{% endif %} fs-6 mb-3">
+                            {{ audit.executive_summary.investment_priority }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">ROI Estimate</h6>
+                        <p class="mb-3">{{ audit.executive_summary.roi_estimate }}</p>
+                        
+                        <h6 class="text-primary">Action Timeline</h6>
+                        <p class="mb-3">{{ audit.executive_summary.action_timeline }}</p>
+                    </div>
+                </div>
+                
+                <h6 class="text-primary">Key Risks</h6>
+                <div class="row">
+                    {% for risk in audit.executive_summary.key_risks %}
+                    <div class="col-md-6 mb-2">
+                        <div class="alert alert-warning py-2 mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ risk }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommendations</h5>
+            </div>
+            <div class="card-body">
+                {% for rec in audit.recommendations %}
+                <div class="border-start border-{% if rec.priority == 'high' %}danger{% elif rec.priority == 'medium' %}warning{% else %}info{% endif %} border-3 ps-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ rec.title }}</h6>
+                            <p class="text-muted mb-1">{{ rec.description }}</p>
+                            <small class="text-success"><i class="fas fa-arrow-up me-1"></i>{{ rec.impact }}</small>
+                        </div>
+                        <span class="badge bg-{% if rec.priority == 'high' %}danger{% elif rec.priority == 'medium' %}warning{% else %}info{% endif %}">
+                            {{ rec.priority|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>New Audit
+            </a>
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print Report
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
