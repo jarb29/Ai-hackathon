@@ -1,0 +1,39 @@
+services:
+  web-audit-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "9000:9000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MCP_SERVICE_URL=http://chrome-mcp:3001
+      - ENVIRONMENT=development
+    depends_on:
+      - chrome-mcp
+    volumes:
+      - ./logs:/app/logs
+      - ./src:/app/src  # Hot reload for development
+    restart: unless-stopped
+    networks:
+      - audit-network
+
+  chrome-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "3001:3001"
+    environment:
+      - MCP_HEADLESS=true
+      - MCP_ISOLATED=true
+      - MCP_PORT=3001
+    volumes:
+      - /dev/shm:/dev/shm
+    restart: unless-stopped
+    networks:
+      - audit-network
+
+networks:
+  audit-network:
+    driver: bridge

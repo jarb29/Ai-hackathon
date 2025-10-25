@@ -1,0 +1,41 @@
+# Fast Alpine-based build for Chrome MCP Service
+FROM node:20-alpine as production
+
+# Update package index and install Chromium with retry logic
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache \
+            chromium \
+            curl \
+            font-noto-emoji \
+            ttf-freefont && \
+        rm -rf /var/cache/apk/* && break || sleep 5; \
+    done
+
+# Set working directory
+WORKDIR /app
+
+# Create MCP service wrapper files
+COPY docker/mcp-service.js .
+COPY docker/package.json .
+
+# Install service dependencies
+RUN npm install --production
+
+# Install MCP Chrome DevTools server globally
+RUN npm install -g chrome-devtools-mcp
+
+# Set Chromium binary path for Alpine
+ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=45s --timeout=15s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Start MCP service
+CMD ["node", "mcp-service.js"]

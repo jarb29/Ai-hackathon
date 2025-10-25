@@ -1,0 +1,56 @@
+# Fast Alpine-based build for Web Audit API
+FROM python:3.9-alpine as builder
+
+# Update package index and install build dependencies with retry
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache \
+            gcc \
+            musl-dev \
+            linux-headers \
+            curl && break || sleep 5; \
+    done
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Production stage
+FROM python:3.9-alpine as production
+
+# Update package index and install runtime dependencies with retry
+RUN apk update --no-cache && \
+    for i in 1 2 3; do \
+        apk add --no-cache curl && break || sleep 5; \
+    done
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python packages from builder
+COPY --from=builder /root/.local /root/.local
+
+# Copy application code
+COPY src/ ./src/
+COPY frontend/ ./frontend/
+COPY .env .
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+# Set environment variables
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app:/app/src
+
+# Expose port
+EXPOSE 9000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:9000/health || exit 1
+
+# Start application
+CMD ["python", "src/app/main.py"]

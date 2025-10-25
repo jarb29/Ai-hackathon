@@ -5,22 +5,34 @@ instances with proper dependency injection. It centralizes service creation
 and ensures consistent configuration across the application.
 """
 
+import os
 from config.config import settings
 from clients.mcp_tool_client import MCPToolClient
+from clients.http_mcp_client import HTTPMCPClient
 from clients.llm_client import LLMClient
 from business.audit_logic import AuditService
 
 
-def get_mcp_client() -> MCPToolClient:
-    """Create MCP client for local development.
+def get_mcp_client():
+    """Create appropriate MCP client based on environment.
     
-    Factory function for creating MCP client that communicates with
-    Chrome DevTools via subprocess for local development.
+    Factory function that detects the deployment environment and returns
+    the appropriate MCP client:
+    - HTTPMCPClient for Docker/containerized environments
+    - MCPToolClient for local development
     
     Returns:
-        MCPToolClient: Configured MCP client for browser automation
+        MCP client instance (HTTPMCPClient or MCPToolClient)
     """
-    return MCPToolClient()
+    # Check if running in Docker environment
+    is_docker = os.getenv('ENVIRONMENT') == 'development' and 'chrome-mcp' in settings.mcp_service_url
+    
+    if is_docker:
+        # Use HTTP client for multi-container Docker setup
+        return HTTPMCPClient(settings.mcp_service_url)
+    else:
+        # Use subprocess client for local development
+        return MCPToolClient()
 
 
 def get_llm_client() -> LLMClient:
