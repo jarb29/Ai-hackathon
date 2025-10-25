@@ -31,8 +31,8 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 9000
 
-    # Multi-container MCP Service Configuration
-    mcp_service_url: str = "http://chrome-mcp:3001"  # MCP service URL for multi-container setup
+    # Local MCP Service Configuration
+    mcp_service_url: str = "http://localhost:3001"  # MCP service URL for local development
     mcp_service_timeout: int = 60  # HTTP timeout for MCP service calls
     mcp_service_retries: int = 3  # Number of retry attempts for MCP service
 
@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     ]
     
     # Node.js MCP Server Process Configuration
+    mcp_server_path: str = "npx"  # Command to run MCP server
+    mcp_server_args: str = "@modelcontextprotocol/server-chrome-devtools"  # MCP server package
     mcp_command: str = "npx"  # Command to run MCP server
     mcp_package: str = "chrome-devtools-mcp@latest"  # NPM package for Chrome DevTools MCP
     mcp_headless: bool = True  # Run Chrome in headless mode for server environments
