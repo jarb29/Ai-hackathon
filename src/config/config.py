@@ -31,8 +31,8 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 9000
 
-    # Local MCP Service Configuration
-    mcp_service_url: str = "http://localhost:3001"  # MCP service URL for local development
+    # Multi-container MCP Service Configuration
+    mcp_service_url: str = "http://chrome-mcp:3001"  # MCP service URL for multi-container setup
     mcp_service_timeout: int = 60  # HTTP timeout for MCP service calls
     mcp_service_retries: int = 3  # Number of retry attempts for MCP service
 

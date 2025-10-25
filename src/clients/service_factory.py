@@ -20,7 +20,7 @@ def get_mcp_client() -> MCPToolClient:
     Returns:
         MCPToolClient: Configured MCP client for browser automation
     """
-    return MCPToolClient(settings.mcp_server_path, settings.mcp_server_args)
+    return MCPToolClient()
 
 
 def get_llm_client() -> LLMClient:
@@ -49,4 +49,6 @@ def get_audit_service() -> AuditService:
         AuditService: Fully configured audit service with all dependencies
     """
     # Create and inject dependencies for complete audit pipeline
-    return AuditService()
+    mcp_client = get_mcp_client()  # Chrome DevTools browser automation
+    llm_client = get_llm_client()  # OpenAI AI-powered analysis
+    return AuditService(mcp_client, llm_client)

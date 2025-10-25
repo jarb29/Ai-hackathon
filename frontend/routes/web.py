@@ -1,44 +1,28 @@
-from fastapi import APIRouter, Request, Form
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-import httpx
+from pathlib import Path
 
 router = APIRouter()
-templates = Jinja2Templates(directory="frontend/templates")
 
+# Get project root directory - go up from frontend/routes/web.py to project root
+project_root = Path(__file__).parent.parent.parent
+templates_dir = project_root / "frontend" / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
 
-@router.get("/web", response_class=HTMLResponse)
-async def index(request: Request):
+@router.get("/", response_class=HTMLResponse)
+async def executive_dashboard(request: Request):
+    """Executive Dashboard - Enterprise-Grade Interface"""
     return templates.TemplateResponse("index.html", {"request": request})
 
+@router.get("/docs", response_class=HTMLResponse)
+async def custom_redoc(request: Request):
+    """Custom ReDoc API Documentation with Enterprise Styling"""
+    return templates.TemplateResponse("redoc.html", {"request": request})
 
-@router.post("/web/audit", response_class=HTMLResponse)
-async def audit(request: Request, url: str = Form(...)):
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "http://localhost:9000/audit",
-                json={"url": url},
-                timeout=60.0
-            )
-            if response.status_code == 200:
-                result = response.json()
-            else:
-                # Handle error responses
-                try:
-                    error_data = response.json()
-                    error_msg = error_data.get('detail', 'Unknown error')
-                except:
-                    error_msg = response.text
-                raise Exception(f"API Error ({response.status_code}): {error_msg}")
-        
-        return templates.TemplateResponse("result.html", {
-            "request": request,
-            "result": result,
-            "url": url
-        })
-    except Exception as e:
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "error": str(e)
-        })
+# Note: Report viewing is handled by JavaScript frontend calling /audit API directly
+# No separate report route needed - all data flows through the main audit API
