@@ -263,68 +263,6 @@ print(f"Executive Summary: {result['executive_summary']['business_impact']}")
 print(f"Investment Priority: {result['executive_summary']['investment_priority']}")
 ```
 
-## 📁 Project Architecture
-
-```
-Ai-hackathon/
-├── 🏗️ src/                         # Production backend
-│   ├── app/                        # FastAPI application
-│   │   ├── routes/                 # API endpoints
-│   │   │   ├── audit.py            # Web audit REST endpoint
-│   │   │   └── health.py           # Health check endpoint
-│   │   └── main.py                 # FastAPI app setup & configuration
-│   ├── business/                   # Core audit logic
-│   │   └── audit_logic.py          # AuditService orchestration
-│   ├── clients/                    # External service clients
-│   │   ├── llm_client.py           # OpenAI GPT-4o integration
-│   │   ├── mcp_tool_client.py      # Chrome DevTools MCP client
-│   │   └── service_factory.py      # Dependency injection factory
-│   ├── config/                     # Configuration management
-│   │   ├── config.py               # Application settings (Pydantic)
-│   │   └── logging_config.py       # Multi-file logging setup
-│   ├── schemas/                    # Pydantic data models
-│   │   ├── requests.py             # API request validation
-│   │   └── responses.py            # Audit response structure
-│   ├── prompts/                    # LLM prompt templates
-│   │   └── prompts.py              # OpenAI system & user prompts
-│   ├── helpers/                    # Utilities and validators
-│   │   ├── exceptions.py           # Custom exception classes
-│   │   └── validators.py           # URL validation logic
-│   ├── middleware/                 # HTTP middleware
-│   │   └── logging_middleware.py   # Request/response logging
-│   └── utils/                      # Utilities and tools
-│       ├── logger.py               # Centralized logging setup
-│       ├── log_context.py          # Correlation ID & performance tracking
-│       └── mcp_tools_exporter.py   # MCP tools documentation utility
-├── 🌐 frontend/                    # Web interface
-│   ├── templates/                  # Jinja2 HTML templates
-│   │   ├── base.html               # Base template layout
-│   │   ├── index.html              # Landing page
-│   │   ├── dashboard.html          # Audit dashboard
-│   │   └── report.html             # Audit results display
-│   ├── static/                     # Static assets
-│   │   ├── css/                    # Stylesheets
-│   │   ├── js/                     # JavaScript files
-│   │   └── images/                 # Image assets
-│   └── routes/                     # Web routes
-│       └── web.py                  # Frontend route handlers
-├── 🐳 docker/                      # Docker configuration
-│   ├── mcp-service.js              # Node.js MCP HTTP service
-│   └── package.json                # Node.js dependencies
-├── 📊 logs/                        # Application logs
-│   ├── app.log                     # General application logs
-│   ├── error.log                   # Error and exception logs
-│   ├── metrics.log                 # Business metrics (METRIC level)
-│   └── debug.log                   # Development debugging logs
-├── .env                            # Environment variables
-├── Makefile                        # Streamlined development commands
-├── docker-compose.dev.yml          # Multi-container orchestration
-├── Dockerfile.api                  # FastAPI service container
-├── Dockerfile.mcp                  # Chrome MCP service container
-├── pyproject.toml                  # Project configuration & dependencies
-└── README.md                       # Project documentation
-```
-
 ## 🎯 Use Case Scenarios
 
 ### **Development Teams**
@@ -392,6 +330,7 @@ make docker-fix   # Nuclear reset for Docker issues
 **Status**: Production Ready | **License**: MIT | **Built with**: FastAPI, OpenAI, Chrome DevTools MCP
 
 _Enterprise-grade web auditing with executive-level intelligence_ 🏛️mance web framework
+
 - **Pydantic**: Data validation and settings management
 - **Uvicorn**: ASGI server for production deployment
 - **Jinja2**: Template engine for web interface
