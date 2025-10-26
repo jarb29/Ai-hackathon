@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     ]
     
     # Node.js MCP Server Process Configuration
+    mcp_server_path: str = "npx"  # Command to run MCP server
+    mcp_server_args: str = "@modelcontextprotocol/server-chrome-devtools"  # MCP server package
     mcp_command: str = "npx"  # Command to run MCP server
     mcp_package: str = "chrome-devtools-mcp@latest"  # NPM package for Chrome DevTools MCP
     mcp_headless: bool = True  # Run Chrome in headless mode for server environments

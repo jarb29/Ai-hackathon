@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enterprise Web Audit Platform - API Documentation</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .enterprise-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-bottom: 3px solid #d69e2e;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .enterprise-logo {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .enterprise-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+        
+        .enterprise-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 5px 0 0 0;
+        }
+        
+        .redoc-container {
+            background: white;
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        redoc {
+            --redoc-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --redoc-primary-color: #667eea;
+            --redoc-secondary-color: #764ba2;
+            --redoc-success-color: #38a169;
+            --redoc-warning-color: #d69e2e;
+            --redoc-error-color: #e53e3e;
+            --redoc-background-color: #ffffff;
+            --redoc-sidebar-background-color: #f8fafc;
+            --redoc-sidebar-text-color: #2d3748;
+            --redoc-code-background-color: #f7fafc;
+            --redoc-border-color: #e2e8f0;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .enterprise-title {
+                font-size: 1.5rem;
+            }
+            
+            .redoc-container {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="enterprise-header">
+        <div class="header-content">
+            <div class="enterprise-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="enterprise-title">Enterprise Web Audit Platform</h1>
+                <p class="enterprise-subtitle">API Documentation - Enterprise-Grade Security & Performance Intelligence</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="redoc-container">
+        <redoc spec-url="/openapi.json"></redoc>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.3/bundles/redoc.standalone.js"></script>
+</body>
+</html>
