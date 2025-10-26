@@ -93,15 +93,12 @@ networks:
 
 ---
 
-## 🔧 **Make Commands for Docker Workflow**
+## 🔧 **Streamlined Make Commands**
 
 ### **Available Commands**
 
 ```bash
-# Build Docker images
-make docker-build
-
-# Start containers
+# Build and start containers (combined)
 make docker-up
 
 # Stop containers
@@ -112,6 +109,9 @@ make docker-clean
 
 # Show container logs
 make docker-logs
+
+# Fix Docker issues (nuclear reset)
+make docker-fix
 ```
 
 ### **Complete Workflow Example**
@@ -119,11 +119,10 @@ make docker-logs
 ```bash
 # Clone and setup
 git clone <repository>
-cd AiHackanton
+cd Ai-hackathon
 echo "OPENAI_API_KEY=your-key" > .env
 
-# Build and start
-make docker-build
+# Build and start (single command)
 make docker-up
 
 # Access services
@@ -191,18 +190,44 @@ MCP_PORT=3001          # MCP service port
 
 ## 🏭 **Production Deployment Strategy**
 
-### **Container Resource Requirements**
+### **Docker Image Details**
 
-- **API Container**: 256MB RAM, 0.2 CPU cores
-- **MCP Container**: 512MB RAM, 0.3 CPU cores (Chrome overhead)
-- **Total**: ~768MB RAM, 0.5 CPU cores per instance
+#### **Dockerfile.api (FastAPI Service)**
+- **Base**: `python:3.9-alpine` (multi-stage build)
+- **Size**: ~289MB optimized
+- **Features**: Health checks, retry logic, minimal runtime
+- **Resources**: 256MB RAM, 0.2 CPU cores
 
-### **Scaling Considerations**
+#### **Dockerfile.mcp (Chrome Service)**
+- **Base**: `node:20-alpine` with Chromium
+- **Size**: ~710MB (includes Chrome browser)
+- **Features**: Headless Chrome, MCP server, font support
+- **Resources**: 512MB RAM, 0.3 CPU cores
 
-- **Horizontal scaling**: Multiple API containers behind load balancer
-- **MCP service**: Can be shared across multiple API instances
-- **Database**: Add persistence layer for audit history
-- **Monitoring**: Prometheus metrics and Grafana dashboards
+#### **Total Requirements**
+- **Combined**: ~999MB images, 768MB RAM, 0.5 CPU cores
+
+### **Docker Implementation Features**
+
+#### **Multi-Stage Builds**
+- **Builder stage**: Compile dependencies with build tools
+- **Production stage**: Minimal runtime without build overhead
+- **Size optimization**: Removes unnecessary packages post-build
+
+#### **Alpine Linux Benefits**
+- **Security**: Minimal attack surface
+- **Size**: Smaller images for faster deployment
+- **Reliability**: Package retry logic for network issues
+
+#### **Health Monitoring**
+- **API Health**: `curl -f http://localhost:9000/health`
+- **MCP Health**: `curl -f http://localhost:3001/health`
+- **Intervals**: 30s API, 45s MCP (Chrome startup time)
+
+#### **Troubleshooting**
+- **docker-fix**: Nuclear reset for corrupted Docker state
+- **Logs**: Real-time monitoring with `make docker-logs`
+- **Volumes**: Persistent logs and hot-reload for development
 
 ---
 

@@ -194,6 +194,216 @@ Phase 3: Executive Summary
 ```bash
 # Clone repository
 git clone <repository-url>
+cd Ai-hackathon
+
+# Configure environment
+echo "OPENAI_API_KEY=your-key-here" > .env
+
+# Build and start (single command)
+make docker-up
+
+# Other Docker commands
+make docker-down    # Stop containers
+make docker-clean   # Remove containers and images
+make docker-logs    # Show container logs
+make docker-fix     # Nuclear reset for Docker issues
+```
+
+#### **Option 2: Local Development**
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd Ai-hackathon
+
+# Install dependencies
+make install
+
+# Configure environment
+echo "OPENAI_API_KEY=your-key-here" > .env
+
+# Start the application
+make run
+```
+
+### **Usage Options**
+
+#### **Web Interface**
+
+```bash
+# Access professional dashboard
+open http://localhost:9000
+```
+
+#### **REST API**
+
+```bash
+# Direct API call
+curl -X POST "http://localhost:9000/audit" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+
+# API documentation
+open http://localhost:9000/docs
+```
+
+#### **Python API**
+
+```python
+# Direct API usage
+import requests
+
+response = requests.post("http://localhost:9000/audit",
+    json={"url": "https://your-target-site.com"})
+result = response.json()
+
+print(f"Performance Score: {result['performance']['lighthouse_score']}")
+print(f"Security Risk: {result['security']['risk_level']}")
+print(f"Executive Summary: {result['executive_summary']['business_impact']}")
+print(f"Investment Priority: {result['executive_summary']['investment_priority']}")
+```
+
+## 📁 Project Architecture
+
+```
+Ai-hackathon/
+├── 🏗️ src/                         # Production backend
+│   ├── app/                        # FastAPI application
+│   │   ├── routes/                 # API endpoints
+│   │   │   ├── audit.py            # Web audit REST endpoint
+│   │   │   └── health.py           # Health check endpoint
+│   │   └── main.py                 # FastAPI app setup & configuration
+│   ├── business/                   # Core audit logic
+│   │   └── audit_logic.py          # AuditService orchestration
+│   ├── clients/                    # External service clients
+│   │   ├── llm_client.py           # OpenAI GPT-4o integration
+│   │   ├── mcp_tool_client.py      # Chrome DevTools MCP client
+│   │   └── service_factory.py      # Dependency injection factory
+│   ├── config/                     # Configuration management
+│   │   ├── config.py               # Application settings (Pydantic)
+│   │   └── logging_config.py       # Multi-file logging setup
+│   ├── schemas/                    # Pydantic data models
+│   │   ├── requests.py             # API request validation
+│   │   └── responses.py            # Audit response structure
+│   ├── prompts/                    # LLM prompt templates
+│   │   └── prompts.py              # OpenAI system & user prompts
+│   ├── helpers/                    # Utilities and validators
+│   │   ├── exceptions.py           # Custom exception classes
+│   │   └── validators.py           # URL validation logic
+│   ├── middleware/                 # HTTP middleware
+│   │   └── logging_middleware.py   # Request/response logging
+│   └── utils/                      # Utilities and tools
+│       ├── logger.py               # Centralized logging setup
+│       ├── log_context.py          # Correlation ID & performance tracking
+│       └── mcp_tools_exporter.py   # MCP tools documentation utility
+├── 🌐 frontend/                    # Web interface
+│   ├── templates/                  # Jinja2 HTML templates
+│   │   ├── base.html               # Base template layout
+│   │   ├── index.html              # Landing page
+│   │   ├── dashboard.html          # Audit dashboard
+│   │   └── report.html             # Audit results display
+│   ├── static/                     # Static assets
+│   │   ├── css/                    # Stylesheets
+│   │   ├── js/                     # JavaScript files
+│   │   └── images/                 # Image assets
+│   └── routes/                     # Web routes
+│       └── web.py                  # Frontend route handlers
+├── 🐳 docker/                      # Docker configuration
+│   ├── mcp-service.js              # Node.js MCP HTTP service
+│   └── package.json                # Node.js dependencies
+├── 📊 logs/                        # Application logs
+│   ├── app.log                     # General application logs
+│   ├── error.log                   # Error and exception logs
+│   ├── metrics.log                 # Business metrics (METRIC level)
+│   └── debug.log                   # Development debugging logs
+├── .env                            # Environment variables
+├── Makefile                        # Streamlined development commands
+├── docker-compose.dev.yml          # Multi-container orchestration
+├── Dockerfile.api                  # FastAPI service container
+├── Dockerfile.mcp                  # Chrome MCP service container
+├── pyproject.toml                  # Project configuration & dependencies
+└── README.md                       # Project documentation
+```
+
+## 🎯 Use Case Scenarios
+
+### **Development Teams**
+
+- Pre-deployment validation with real browser data
+- Performance regression detection
+- Security compliance verification
+
+### **DevOps & SRE**
+
+- CI/CD integration with FastAPI endpoints
+- SLO monitoring with automated thresholds
+- Incident prevention through proactive scanning
+
+### **Executive Leadership**
+
+- Enterprise-grade audit intelligence
+- Risk assessment with business impact quantification
+- Strategic planning with performance investment ROI
+
+## 🔧 Technical Stack
+
+### **Core Technologies**
+
+- **Backend**: FastAPI, Python 3.9+
+- **AI/LLM**: OpenAI GPT-4o with function calling
+- **Browser Automation**: Chrome DevTools MCP + Node.js
+- **Frontend**: Jinja2 templates, HTML/CSS
+- **Data Validation**: Pydantic schemas
+- **Protocol**: JSON-RPC for MCP communication
+
+### **Architecture Patterns**
+
+- Clean dependency injection
+- Three-phase AI analysis pipeline
+- Real-time browser integration
+- Executive-grade reporting
+
+### **Docker Implementation**
+
+- **Multi-stage builds**: Optimized Alpine Linux images
+- **Service orchestration**: Docker Compose with health checks
+- **Development workflow**: Streamlined Make commands
+- **Production ready**: Proper networking and volume management
+
+## 🚀 Make Commands
+
+```bash
+# Development
+make install      # Install dependencies
+make run          # Start application locally
+make stop         # Stop application
+make clean        # Clean build artifacts
+
+# Docker
+make docker-up    # Build and start containers
+make docker-down  # Stop containers
+make docker-clean # Remove containers and images
+make docker-logs  # Show container logs
+make docker-fix   # Nuclear reset for Docker issues
+```
+
+---
+
+**Status**: Production Ready | **License**: MIT | **Built with**: FastAPI, OpenAI, Chrome DevTools MCP
+
+_Enterprise-grade web auditing with executive-level intelligence_ 🏛️mance web framework
+- **Pydantic**: Data validation and settings management
+- **Uvicorn**: ASGI server for production deployment
+- **Jinja2**: Template engine for web interface
+- **Chrome DevTools MCP**: Browser automation protocol
+
+### **Installation**
+
+#### **Option 1: Docker (Recommended)**
+
+```bash
+# Clone repository
+git clone <repository-url>
 cd AiHackanton
 
 # Configure environment
